@@ -16,7 +16,7 @@
 
 
 
-------------------------------------------------- Relationships  -------------------------------------------------------------------------
+-------------------------------------------- Relationships  -------------------------------------------------------------------------
      
         Yes, your updated models look correct based on the requirements of your makeshift Reddit API project.
         You have properly defined the one-to-many relationships between User and Post, User and Comment,
@@ -132,3 +132,56 @@ UsersController
 + PostUser(user: User): Task<ActionResult<User>>
 + DeleteUser(username: string): Task<IActionResult>
 
+Models:
+
+
+public class Comment
+{
+    public int Id { get; set; }
+    public string Content { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public int UserId { get; set; } // Comment belongs to a User
+    public virtual User User { get; set; } // Comment has a User
+    public int PostId { get; set; } // Comment belongs to a Post
+    public virtual Post Post { get; set; } // Comment has a Post
+    public virtual ICollection<Vote> Votes { get; set; } // Comment has a collection of Votes
+}
+
+public class Post
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public int UserId { get; set; } // Post belongs to a User
+    public virtual User User { get; set; } // Post has a User
+    public virtual ICollection<Comment> Comments { get; set; } // Post has a collection of Comments
+    public virtual ICollection<Vote> Votes { get; set; } // Post has a collection of Votes
+}
+
+
+
+    public class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public virtual ICollection<Post> Posts { get; set; } // User has a collection of Posts
+        public virtual ICollection<Comment> Comments { get; set; } // User has a collection of Comments
+        public virtual ICollection<Vote> Votes { get; set; } // User has a collection of Votes
+    }
+
+public class Vote
+{
+    public int Id { get; set; }
+    public string Type { get; set; }
+    public int UserId { get; set; } // Vote belongs to a User
+    public virtual User User { get; set; } // Vote has a User
+    public int? PostId { get; set; } // Vote belongs to a Post (nullable)
+    public virtual Post Post { get; set; } // Vote has a Post
+    public int? CommentId { get; set; } // Vote belongs to a Comment (nullable)
+    public virtual Comment Comment { get; set; } // Vote has a Comment
+}

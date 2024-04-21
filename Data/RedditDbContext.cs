@@ -1,14 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Reflection.Emit;
+﻿
 using Microsoft.EntityFrameworkCore;
+using RedditAPI.Models;
 
 
-namespace RedditAPI.Models
+namespace RedditAPI.Data
 {
     public class RedditDbContext : DbContext
     {
         public RedditDbContext(DbContextOptions<RedditDbContext> options) : base(options)
         {
+            this.ChangeTracker.LazyLoadingEnabled = true;
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLazyLoadingProxies();
         }
 
         public DbSet<User> Users { get; set; }
@@ -23,10 +29,16 @@ namespace RedditAPI.Models
                 .WithOne(p => p.User)
                 .HasForeignKey(p => p.UserId);
 
+
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Comments)
                 .WithOne(c => c.User)
-                .HasForeignKey(c => c.UserId);
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<User>()
+            //    .HasMany(u => u.Comments)
+            //    .WithOne(c => c.User)
+            //    .HasForeignKey(c => c.UserId);
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Votes)
@@ -42,15 +54,17 @@ namespace RedditAPI.Models
                 .HasMany(p => p.Votes)
                 .WithOne(v => v.Post)
                 .HasForeignKey(v => v.PostId)
-                .IsRequired(false); // PostId is nullable in Vote
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Comment>()
                 .HasMany(c => c.Votes)
                 .WithOne(v => v.Comment)
                 .HasForeignKey(v => v.CommentId)
-                .IsRequired(false); // CommentId is nullable in Vote
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 
 
 }
+
+
