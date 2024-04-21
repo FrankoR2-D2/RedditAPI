@@ -22,7 +22,15 @@ namespace RedditAPI.Services
 
         public async Task<User> GetUser(int id)
         {
-            return await _context.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                return user;
+            }
+            else
+            {
+                throw new ArgumentException($"User with id {id} not found.");
+            }
         }
 
         public async Task UpdateUser(User user)
@@ -34,8 +42,16 @@ namespace RedditAPI.Services
         public async Task DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentException($"User with id {id} not found.");
+
+            }
         }
     }
 }

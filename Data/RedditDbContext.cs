@@ -1,4 +1,5 @@
 ﻿
+
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RedditAPI.Models;
@@ -6,7 +7,7 @@ using RedditAPI.Models;
 
 namespace RedditAPI.Data
 {
-    public class RedditDbContext :  IdentityDbContext<User> 
+    public class RedditDbContext : IdentityDbContext<User>
     {
         public RedditDbContext(DbContextOptions<RedditDbContext> options) : base(options)
         {
@@ -18,13 +19,17 @@ namespace RedditAPI.Data
             optionsBuilder.UseLazyLoadingProxies();
         }
 
-        public DbSet<User> Users { get; set; }
+
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Vote> Votes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Call the base OnModelCreating to configure the schema needed for Identity
+            base.OnModelCreating(modelBuilder); 
+
+
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Posts)
                 .WithOne(p => p.User)

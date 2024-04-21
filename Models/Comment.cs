@@ -6,7 +6,7 @@ namespace RedditAPI.Models
 
     public class Comment
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
         public string Content { get; set; }
@@ -15,29 +15,24 @@ namespace RedditAPI.Models
         public DateTime UpdatedAt { get; set; }
 
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public virtual User? User { get; set; }
 
         [Required]
-        public int PostId { get; set; }
+        public Guid PostId { get; set; }
         public virtual Post? Post { get; set; }
 
         public virtual ICollection<Vote>? Votes { get; set; }
 
-        public Comment(string content)
+        public Comment(string content, string userId)
         {
             Content = content;
-            UserId = GetLoggedInUserId();
+            UserId = userId;
             CreatedAt = DateTime.Now;
             UpdatedAt = DateTime.Now;
             Votes = new List<Vote>();
         }
 
-        private int GetLoggedInUserId()
-        {
-            // TODO: Implement this method later
-            // throw new NotImplementedException();
-            return 1; // Return a default value for now
-        }
+        
     }
 }

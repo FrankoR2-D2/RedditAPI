@@ -5,7 +5,7 @@ namespace RedditAPI.Models
 {
     public class Post
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
         public string Title { get; set; }
@@ -14,12 +14,12 @@ namespace RedditAPI.Models
         public DateTime UpdatedAt { get; set; }
 
         [Required]
-        public int UserId { get; set; } // Post belongs to a User
+        public string UserId { get; set; } // Post belongs to a User
         public virtual User? User { get; set; } // Declare 'User' property as nullable
         public virtual ICollection<Comment>? Comments { get; set; } // Declare 'Comments' property as nullable
         public virtual ICollection<Vote>? Votes { get; set; } // Declare 'Votes' property as nullable
 
-        public Post(string title,  string? content = null)
+        public Post(string title, string userId,  string? content = null)
         {
             if(content == null)
             {
@@ -27,7 +27,7 @@ namespace RedditAPI.Models
             }
 
             Title = title;
-            UserId = GetLoggedInUserId();
+            UserId = userId;
             Content = content;
             CreatedAt = DateTime.Now;
             UpdatedAt = DateTime.Now;
@@ -35,12 +35,7 @@ namespace RedditAPI.Models
             Votes = new List<Vote>();
         }
 
-        private int GetLoggedInUserId()
-        {
-            // TODO: Implement this method later
-            // throw new NotImplementedException();
-            return 1; // Return a default value for now
-        }
+      
     }
 
 }
