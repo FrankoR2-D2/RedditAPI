@@ -1,5 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RedditAPI.Data;
+using RedditAPI.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +21,29 @@ builder.Services.AddDbContext<RedditDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
+// Add services to the container.
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<RedditDbContext>()
+    .AddDefaultTokenProviders();
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
 
 
 
@@ -42,34 +69,3 @@ app.Run();
 
 
 
-//using System.Security.Cryptography;
-//using System.Text;
-
-//string password = "myPassword123";
-//byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-
-//using (SHA256 sha256 = SHA256.Create())
-//{
-//    byte[] hashedBytes = sha256.ComputeHash(passwordBytes);
-//    string hashedPassword = Convert.ToBase64String(hashedBytes);
-
-//    // Store the hashed password securely
-//}
-//string enteredPassword = "myPassword123";
-//byte[] enteredPasswordBytes = Encoding.UTF8.GetBytes(enteredPassword);
-
-//using (SHA256 sha256 = SHA256.Create())
-//{
-//    byte[] enteredHashedBytes = sha256.ComputeHash(enteredPasswordBytes);
-//    string enteredHashedPassword = Convert.ToBase64String(enteredHashedBytes);
-
-//    // Compare the entered hashed password with the stored hashed password
-//    if (enteredHashedPassword == storedHashedPassword)
-//    {
-//        // Password is valid
-//    }
-//    else
-//    {
-//        // Password is invalid
-//    }
-//}

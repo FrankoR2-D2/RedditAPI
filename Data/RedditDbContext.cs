@@ -1,11 +1,12 @@
 ﻿
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RedditAPI.Models;
 
 
 namespace RedditAPI.Data
 {
-    public class RedditDbContext : DbContext
+    public class RedditDbContext :  IdentityDbContext<User> 
     {
         public RedditDbContext(DbContextOptions<RedditDbContext> options) : base(options)
         {

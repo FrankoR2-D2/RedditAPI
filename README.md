@@ -185,3 +185,28 @@ public class Vote
     public int? CommentId { get; set; } // Vote belongs to a Comment (nullable)
     public virtual Comment Comment { get; set; } // Vote has a Comment
 }
+
+
+Based on your requirements, here are the CRUD operations you would need in your controllers:
+1.	UserController
+•	CreateUser(User user): Creates a new user.
+•	GetUser(int id): Retrieves a user by their ID.
+•	UpdateUser(int id, User user): Updates a user's details.
+•	DeleteUser(int id): Deletes a user.
+2.	PostController
+•	CreatePost(int userId, Post post): Creates a new post for a user.
+•	GetPost(int id): Retrieves a post by its ID, including its comments and vote count.
+•	UpdatePost(int id, Post post): Updates a post's details.
+•	DeletePost(int id): Deletes a post.
+•	GetPostsByUser(int userId): Retrieves all posts created by a user.
+•	GetVotedPostsByUser(int userId): Retrieves all posts upvoted or downvoted by a user.
+3.	CommentController
+•	CreateComment(int userId, int postId, Comment comment): Creates a new comment for a post.
+•	GetComment(int id): Retrieves a comment by its ID.
+•	UpdateComment(int id, Comment comment): Updates a comment's details.
+•	DeleteComment(int id): Deletes a comment.
+4.	VoteController
+•	CreateVote(int userId, int postId, Vote vote): Creates a new vote for a post.
+•	CreateVote(int userId, int commentId, Vote vote): Creates a new vote for a comment.
+•	DeleteVote(int id): Deletes a vote.
+Remember, these are just the basic operations. Depending on your application's needs, you might need to add more complex operations, like searching for posts by title or sorting posts by vote count.

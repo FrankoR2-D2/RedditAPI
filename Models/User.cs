@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Hosting;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 
 namespace RedditAPI.Models
 {
-    public class User
+    public class User : IdentityUser
     {
         public int Id { get; set; }
 
