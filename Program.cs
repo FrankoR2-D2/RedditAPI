@@ -23,3 +23,37 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+
+//using System.Security.Cryptography;
+//using System.Text;
+
+//string password = "myPassword123";
+//byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+
+//using (SHA256 sha256 = SHA256.Create())
+//{
+//    byte[] hashedBytes = sha256.ComputeHash(passwordBytes);
+//    string hashedPassword = Convert.ToBase64String(hashedBytes);
+
+//    // Store the hashed password securely
+//}
+//string enteredPassword = "myPassword123";
+//byte[] enteredPasswordBytes = Encoding.UTF8.GetBytes(enteredPassword);
+
+//using (SHA256 sha256 = SHA256.Create())
+//{
+//    byte[] enteredHashedBytes = sha256.ComputeHash(enteredPasswordBytes);
+//    string enteredHashedPassword = Convert.ToBase64String(enteredHashedBytes);
+
+//    // Compare the entered hashed password with the stored hashed password
+//    if (enteredHashedPassword == storedHashedPassword)
+//    {
+//        // Password is valid
+//    }
+//    else
+//    {
+//        // Password is invalid
+//    }
+//}
