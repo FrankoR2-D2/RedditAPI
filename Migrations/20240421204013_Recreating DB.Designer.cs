@@ -12,8 +12,8 @@ using RedditAPI.Data;
 namespace RedditAPI.Migrations
 {
     [DbContext(typeof(RedditDbContext))]
-    [Migration("20240421203459_UpdatingUserModel")]
-    partial class UpdatingUserModel
+    [Migration("20240421204013_Recreating DB")]
+    partial class RecreatingDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
