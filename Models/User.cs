@@ -1,16 +1,14 @@
-﻿using Microsoft.Extensions.Hosting;
-using System.Xml.Linq;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 
 namespace RedditAPI.Models
 {
-    public class User
+    public class User : IdentityUser
     {
-        public int Id { get; set; } // Assuming integer ID for simplicity
-        public string Username { get; set; }
-        public string PasswordHash { get; set; } // Optional, hashed password
-        public DateTime CreatedAt { get; set; }
-
-        public ICollection<Post> Posts { get; set; } // Navigation property for one-to-many relationship with Post
-        public ICollection<Comment> Comments { get; set; } // Optional navigation property for one-to-many relationship with Comment (if implemented)
+        public virtual ICollection<Post>? Posts { get; set; } // User has a collection of Posts
+        public virtual ICollection<Comment>? Comments { get; set; } // User has a collection of Comments
+        public virtual ICollection<Vote>? Votes { get; set; } // User has a collection of Votes
     }
 }
+
+

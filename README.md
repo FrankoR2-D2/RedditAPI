@@ -1,1 +1,212 @@
 # RedditAPI
+
+------------------------------------------------------- Base Requirements ----------------------------------------------------------
+
+    Reddit is a network of communities where people can dive into their interests,
+    hobbies, and passions. Your goal is to build a makeshift Reddit API. This API needs to comply with the following criteria.
+
+    • A user should be able to create posts as well as update and delete those posts.
+    • Users should be able to upvote (like) or downvote (dislike) those posts.
+    • Users should be able to comment on posts.
+    • A User should be able to upvote or downvote comments.
+    • A user should be able to query all the posts that they have created.
+    • A user should be able to query all the posts that they have upvoted or downvoted.
+    • A user should be able to see all the posts created by a specific user by using their username.
+    • Viewing any post should show you all the comments for that post as well as how many people upvoted or downvoted the post.
+
+
+
+-------------------------------------------- Relationships  -------------------------------------------------------------------------
+     
+        Yes, your updated models look correct based on the requirements of your makeshift Reddit API project.
+        You have properly defined the one-to-many relationships between User and Post, User and Comment,
+        and Post and Comment using navigation properties.
+        You’ve also correctly defined the many-to-one relationships from Post, Comment, and Vote to User.
+
+        Here’s a brief overview of your models:
+
+        User: A user can create many posts, comments, and votes.
+                This is represented by the ICollection<Post> Posts,
+                ICollection<Comment> Comments, and ICollection<Vote> Votes properties.
+
+        Post: A post belongs to a user and can have many comments and votes.
+
+                This is represented by the User User property and the ICollection<Comment> Comments and ICollection<Vote> Votes properties.
+
+        Comment: A comment belongs to a user and a post, and can have many votes.
+                    This is represented by the User User, Post Post, and ICollection<Vote> Votes properties.
+
+        Vote: A vote belongs to a user and can belong to a post or a comment.
+                This is represented by the User User, Post Post, and Comment Comment properties.
+    
+------------------------------------------------ UML - Class diagram ---------------------------------------------------------------
+                            
+
+                User
+            ---
+            + Id: int
+            + Username: string
+            + Email: string
+            + Password: string
+            + Posts: ICollection<Post>
+            + Comments: ICollection<Comment>
+            + Votes: ICollection<Vote>
+
+            Post
+            ---
+            + Id: int
+            + Title: string
+            + Content: string
+            + CreatedAt: DateTime
+            + UpdatedAt: DateTime
+            + UserId: int
+            + User: User
+            + Comments: ICollection<Comment>
+            + Votes: ICollection<Vote>
+
+            Comment
+            ---
+            + Id: int
+            + Content: string
+            + CreatedAt: DateTime
+            + UpdatedAt: DateTime
+            + UserId: int
+            + User: User
+            + PostId: int
+            + Post: Post
+            + Votes: ICollection<Vote>
+
+            Vote
+            ---
+            + Id: int
+            + Type: string
+            + UserId: int
+            + User: User
+            + PostId: int?
+            + Post: Post
+            + CommentId: int?
+            + Comment: Comment
+
+            In this diagram:
+
+Each box represents a class (entity). The name of the class is at the top, followed by its properties.
+The + symbol before each property indicates that it’s public.
+The type of each property is listed after the property name.
+The ICollection<T> type indicates a collection navigation property, which is used to represent relationships between entities123.
+The ? symbol after a type indicates that the property is nullable123.
+
+
+----------------------------------------------------------------------------------------------------------------------------
+
+PostsController
+---
++ GetPosts(): Task<ActionResult<IEnumerable<Post>>>
++ GetPost(id: int): Task<ActionResult<Post>>
++ PutPost(id: int, post: Post): Task<IActionResult>
++ PostPost(post: Post): Task<ActionResult<Post>>
++ DeletePost(id: int): Task<IActionResult>
+
+CommentsController
+---
++ GetComments(): Task<ActionResult<IEnumerable<Comment>>>
++ GetComment(id: int): Task<ActionResult<Comment>>
++ PutComment(id: int, comment: Comment): Task<IActionResult>
++ PostComment(comment: Comment): Task<ActionResult<Comment>>
++ DeleteComment(id: int): Task<IActionResult>
+
+VotesController
+---
++ GetVotes(): Task<ActionResult<IEnumerable<Vote>>>
++ GetVote(id: int): Task<ActionResult<Vote>>
++ PutVote(id: int, vote: Vote): Task<IActionResult>
++ PostVote(vote: Vote): Task<ActionResult<Vote>>
++ DeleteVote(id: int): Task<IActionResult>
+
+UsersController
+---
++ GetUserPosts(username: string): Task<ActionResult<IEnumerable<Post>>>
++ GetUserVotes(username: string): Task<ActionResult<IEnumerable<Vote>>>
++ GetUserComments(username: string): Task<ActionResult<IEnumerable<Comment>>>
++ GetUser(username: string): Task<ActionResult<User>>
++ PutUser(username: string, user: User): Task<IActionResult>
++ PostUser(user: User): Task<ActionResult<User>>
++ DeleteUser(username: string): Task<IActionResult>
+
+Models:
+
+
+public class Comment
+{
+    public int Id { get; set; }
+    public string Content { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public int UserId { get; set; } // Comment belongs to a User
+    public virtual User User { get; set; } // Comment has a User
+    public int PostId { get; set; } // Comment belongs to a Post
+    public virtual Post Post { get; set; } // Comment has a Post
+    public virtual ICollection<Vote> Votes { get; set; } // Comment has a collection of Votes
+}
+
+public class Post
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public int UserId { get; set; } // Post belongs to a User
+    public virtual User User { get; set; } // Post has a User
+    public virtual ICollection<Comment> Comments { get; set; } // Post has a collection of Comments
+    public virtual ICollection<Vote> Votes { get; set; } // Post has a collection of Votes
+}
+
+
+
+    public class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public virtual ICollection<Post> Posts { get; set; } // User has a collection of Posts
+        public virtual ICollection<Comment> Comments { get; set; } // User has a collection of Comments
+        public virtual ICollection<Vote> Votes { get; set; } // User has a collection of Votes
+    }
+
+public class Vote
+{
+    public int Id { get; set; }
+    public string Type { get; set; }
+    public int UserId { get; set; } // Vote belongs to a User
+    public virtual User User { get; set; } // Vote has a User
+    public int? PostId { get; set; } // Vote belongs to a Post (nullable)
+    public virtual Post Post { get; set; } // Vote has a Post
+    public int? CommentId { get; set; } // Vote belongs to a Comment (nullable)
+    public virtual Comment Comment { get; set; } // Vote has a Comment
+}
+
+
+Based on your requirements, here are the CRUD operations you would need in your controllers:
+1.	UserController
+•	CreateUser(User user): Creates a new user.
+•	GetUser(int id): Retrieves a user by their ID.
+•	UpdateUser(int id, User user): Updates a user's details.
+•	DeleteUser(int id): Deletes a user.
+2.	PostController
+•	CreatePost(int userId, Post post): Creates a new post for a user.
+•	GetPost(int id): Retrieves a post by its ID, including its comments and vote count.
+•	UpdatePost(int id, Post post): Updates a post's details.
+•	DeletePost(int id): Deletes a post.
+•	GetPostsByUser(int userId): Retrieves all posts created by a user.
+•	GetVotedPostsByUser(int userId): Retrieves all posts upvoted or downvoted by a user.
+3.	CommentController
+•	CreateComment(int userId, int postId, Comment comment): Creates a new comment for a post.
+•	GetComment(int id): Retrieves a comment by its ID.
+•	UpdateComment(int id, Comment comment): Updates a comment's details.
+•	DeleteComment(int id): Deletes a comment.
+4.	VoteController
+•	CreateVote(int userId, int postId, Vote vote): Creates a new vote for a post.
+•	CreateVote(int userId, int commentId, Vote vote): Creates a new vote for a comment.
+•	DeleteVote(int id): Deletes a vote.
+Remember, these are just the basic operations. Depending on your application's needs, you might need to add more complex operations, like searching for posts by title or sorting posts by vote count.
