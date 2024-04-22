@@ -16,11 +16,13 @@ namespace RedditAPI.Controllers
     {
         private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration;
 
-        public UserController(IUserService userService, UserManager<User> userManager)
+        public UserController(IUserService userService, UserManager<User> userManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _userService = userService;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -84,7 +86,7 @@ namespace RedditAPI.Controllers
                 return BadRequest("Email is already taken.");
             }
 
-            var user = new User { UserName = model.Username, Email = model.Email };
+            var user = new User { UserName = model.Username ?? model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
@@ -99,7 +101,10 @@ namespace RedditAPI.Controllers
         private string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("your_secret_key_here"); // Replace with your secret key
+            var jwtKey = _configuration["Jwt:Key"] ?? throw new Exception("JWT Key not found in configuration");
+            var key = Encoding.ASCII.GetBytes(jwtKey);
+
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id) }),

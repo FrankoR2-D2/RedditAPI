@@ -23,7 +23,7 @@ namespace RedditAPI.Models
             Email = string.Empty;
             Password = string.Empty;
             ConfirmPassword = string.Empty;
-            Username = string.Empty;
+            Username = Email;
 
         }
     }
