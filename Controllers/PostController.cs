@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RedditAPI.Models;
 using RedditAPI.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace RedditAPI.Controllers
 {
@@ -22,36 +24,46 @@ namespace RedditAPI.Controllers
 
 [Authorize]
 [HttpPost]
-public async Task<IActionResult> Create(CreatePostRequest request)
-{
-    if (!ModelState.IsValid)
-    {
-        return BadRequest(ModelState);
-    }
+        public async Task<IActionResult> Create(CreatePostRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-    var user = await _userManager.GetUserAsync(User);
-    if (user == null)
-    {
-        return NotFound("User not found.");
-    }
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
 
-    var post = new Post(request.Title, user.Id, request.Content);
+            var post = new Post(request.Title, user.Id, request.Content);
 
-    // Save the post to the database...
-    await _postService.CreatePost(post);
+            // Save the post to the database...
+            await _postService.CreatePost(post);
 
-    return Ok(post);
-}
+            // Serialize the post using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(post, MyJsonContext.Default.Post);
+
+            return Ok(json);
+        }
 
 
 
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Post>>> GetPosts()
+        public async Task<ActionResult<PostList>> GetPosts()
         {
             var posts = await _postService.GetPosts();
-            return Ok(posts);
+
+            // Wrap the posts in a PostList
+            var postList = new PostList { Posts = posts.ToList() };
+
+            // Serialize the PostList using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(postList, MyJsonContext.Default.PostList);
+
+            return Ok(json);
         }
 
 
@@ -66,7 +78,10 @@ public async Task<IActionResult> Create(CreatePostRequest request)
                 return NotFound();
             }
 
-            return Ok(post);
+            // Serialize the post using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(post, MyJsonContext.Default.Post);
+
+            return Ok(json);
         }
 
         [Authorize]
@@ -108,7 +123,7 @@ public async Task<IActionResult> Create(CreatePostRequest request)
 
         [Authorize]
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<IEnumerable<Post>>> GetPostsByUser(string userId)
+        public async Task<ActionResult<PostList>> GetPostsByUser(string userId)
         {
             var posts = await _postService.GetPostsByUser(userId);
 
@@ -117,7 +132,15 @@ public async Task<IActionResult> Create(CreatePostRequest request)
                 return NotFound();
             }
 
-            return Ok(posts);
+            // Wrap the posts in a PostList
+            var postList = new PostList { Posts = posts.ToList() };
+
+            // Serialize the PostList using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(postList, MyJsonContext.Default.PostList);
+
+            return Ok(json);
         }
     }
+
+
 }

@@ -4,11 +4,19 @@ namespace RedditAPI.Models
 {
     public class UserRegistrationModel
     {
-
+        private string email = string.Empty;
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email
+        {
+            get { return email; }
+            set
+            {
+                email = value;
+                Username = email;
+            }
+        }
 
         [Required]
         public string Password { get; set; }
@@ -16,15 +24,13 @@ namespace RedditAPI.Models
         [Required]
         [Compare("Password")]
         public string ConfirmPassword { get; set; }
+
         public string? Username { get; internal set; }
 
         public UserRegistrationModel()
         {
-            Email = string.Empty;
             Password = string.Empty;
             ConfirmPassword = string.Empty;
-            Username = Email;
-
         }
     }
 }
