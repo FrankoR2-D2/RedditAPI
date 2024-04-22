@@ -43,7 +43,27 @@ Content-Type: application/json
 DELETE {{RedditAPI_HostAddress}}/User/a7535e61-59ee-46e3-af90-0518c370acf0
 Accept: application/json
 
+### Login a user    
+POST /user/login HTTP/1.1
+Host: your-api-url.com
+Content-Type: application/json
 
+{
+    "Email": "user@example.com",
+    "Password": "userpassword"
+}
+
+
+POST /user/register HTTP/1.1
+Host: your-api-url.com
+Content-Type: application/json
+
+{
+    "Email": "newuser@example.com",
+    "Password": "newuserpassword",
+    "ConfirmPassword": "newuserpassword"
+
+}
 
 ### Post Controller API
 
