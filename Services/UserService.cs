@@ -20,26 +20,35 @@ namespace RedditAPI.Services
             return user;
         }
 
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUser(string id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user != null)
-            {
-                return user;
-            }
-            else
+            if (user == null)
             {
                 throw new ArgumentException($"User with id {id} not found.");
             }
+            return user;
         }
 
         public async Task UpdateUser(User user)
         {
-            _context.Entry(user).State = EntityState.Modified;
+            var userInDb = await _context.Users.FindAsync(user.Id);
+            if (userInDb == null)
+            {
+                throw new ArgumentException($"User with id {user.Id} not found.");
+            }
+
+            // Update fields
+            userInDb.UserName = user.UserName;
+            userInDb.Email = user.Email;
+
+            // The EntityState.Modified is not needed here, because the entity is being tracked
+            // by the context and EF Core will detect the changes made to it.
+
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteUser(int id)
+        public async Task DeleteUser(string id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user != null)
@@ -50,7 +59,6 @@ namespace RedditAPI.Services
             else
             {
                 throw new ArgumentException($"User with id {id} not found.");
-
             }
         }
     }
