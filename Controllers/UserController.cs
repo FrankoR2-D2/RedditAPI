@@ -85,8 +85,8 @@ namespace RedditAPI.Controllers
             {
                 return BadRequest("Email is already taken.");
             }
+            var user = new User { UserName = string.IsNullOrEmpty(model.Username) ? model.Email : model.Username, Email = model.Email };
 
-            var user = new User { UserName = model.Username ?? model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)

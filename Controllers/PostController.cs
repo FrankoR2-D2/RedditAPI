@@ -20,35 +20,33 @@ namespace RedditAPI.Controllers
             _postService = postService;
         }
 
+[Authorize]
+[HttpPost]
+public async Task<IActionResult> Create(CreatePostRequest request)
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
 
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> Create(Post post)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(post);
-            }
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null)
+    {
+        return NotFound("User not found.");
+    }
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
+    var post = new Post(request.Title, user.Id, request.Content);
 
-            post.UserId = user.Id;
+    // Save the post to the database...
+    await _postService.CreatePost(post);
 
-            // Save the post to the database...
-            await _postService.CreatePost(post);
-
-            return RedirectToAction(nameof(Index));
-        }
-
+    return Ok(post);
+}
 
 
 
-    
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Post>>> GetPosts()
         {
@@ -57,7 +55,7 @@ namespace RedditAPI.Controllers
         }
 
 
-
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<Post>> GetPost(Guid id)
         {
@@ -108,7 +106,7 @@ namespace RedditAPI.Controllers
             return NoContent();
         }
 
-
+        [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Post>>> GetPostsByUser(string userId)
         {
