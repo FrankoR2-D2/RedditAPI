@@ -37,13 +37,32 @@ namespace RedditAPI.Controllers
                 return NotFound("User not found.");
             }
 
-            var post = new Post(request.Title, user.Id, request.Content);
+            var post = new Post(request.Title, user.Id, request.Content)
+            {
+                User = user
+            };
 
             // Save the post to the database...
             await _postService.CreatePost(post);
 
-            // Serialize the post using the source-generated JSON serializer
-            string json = JsonSerializer.Serialize(post, MyJsonContext.Default.Post);
+            var postDto = new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            };
+
+            // Serialize the postDto using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(postDto);
 
             return Ok(json);
         }
@@ -69,7 +88,7 @@ namespace RedditAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Post>> GetPost(Guid id)
+        public async Task<ActionResult<PostDto>> GetPost(Guid id)
         {
             var post = await _postService.GetPost(id);
 
@@ -78,8 +97,24 @@ namespace RedditAPI.Controllers
                 return NotFound();
             }
 
-            // Serialize the post using the source-generated JSON serializer
-            string json = JsonSerializer.Serialize(post, MyJsonContext.Default.Post);
+            var postDto = new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            };
+
+            // Serialize the postDto using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(postDto);
 
             return Ok(json);
         }

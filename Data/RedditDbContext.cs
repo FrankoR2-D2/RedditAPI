@@ -67,6 +67,10 @@ namespace RedditAPI.Data
                 .WithOne(v => v.Comment)
                 .HasForeignKey(v => v.CommentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+                    modelBuilder.Entity<Post>()
+            .Property(p => p.CreatedAt)
+            .HasDefaultValueSql("GETDATE()");
         }
     }
 
