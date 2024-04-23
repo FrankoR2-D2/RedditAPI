@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RedditAPI.DTOs;
 using RedditAPI.Models;
 using RedditAPI.Services;
 using System.Text.Json;
@@ -72,17 +73,27 @@ namespace RedditAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<PostList>> GetPosts()
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts()
         {
             var posts = await _postService.GetPosts();
 
-            // Wrap the posts in a PostList
-            var postList = new PostList { Posts = posts.ToList() };
+            var postDtos = posts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            }).ToList();
 
-            // Serialize the PostList using the source-generated JSON serializer
-            string json = JsonSerializer.Serialize(postList, MyJsonContext.Default.PostList);
-
-            return Ok(json);
+            return Ok(postDtos);
         }
 
 
@@ -113,10 +124,7 @@ namespace RedditAPI.Controllers
                 }
             };
 
-            // Serialize the postDto using the source-generated JSON serializer
-            string json = JsonSerializer.Serialize(postDto);
-
-            return Ok(json);
+            return Ok(postDto);
         }
 
         [Authorize]
@@ -158,7 +166,7 @@ namespace RedditAPI.Controllers
 
         [Authorize]
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<PostList>> GetPostsByUser(string userId)
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsByUser(string userId)
         {
             var posts = await _postService.GetPostsByUser(userId);
 
@@ -167,13 +175,23 @@ namespace RedditAPI.Controllers
                 return NotFound();
             }
 
-            // Wrap the posts in a PostList
-            var postList = new PostList { Posts = posts.ToList() };
+            var postDtos = posts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            }).ToList();
 
-            // Serialize the PostList using the source-generated JSON serializer
-            string json = JsonSerializer.Serialize(postList, MyJsonContext.Default.PostList);
-
-            return Ok(json);
+            return Ok(postDtos);
         }
     }
 

@@ -1,4 +1,4 @@
-﻿namespace RedditAPI.Models
+﻿namespace RedditAPI.DTOs
 {
     public class PostDto
     {
