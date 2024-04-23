@@ -1,4 +1,5 @@
-﻿using RedditAPI.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using RedditAPI.Data;
 using RedditAPI.Models;
 
 namespace RedditAPI.Services
@@ -12,36 +13,42 @@ namespace RedditAPI.Services
             _context = context;
         }
 
-        public Task<Post> CreatePost(Post post)
+        public async Task<Post> CreatePost(Post post)
         {
-            throw new NotImplementedException();
+            _context.Posts.Add(post);
+            await _context.SaveChangesAsync();
+            return post;
         }
 
-        public Task DeletePost(Guid id)
+        public async Task DeletePost(Guid id)
         {
-            throw new NotImplementedException();
+            var post = await _context.Posts.FindAsync(id);
+            if (post != null)
+            {
+                _context.Posts.Remove(post);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public Task<Post> GetPost(Guid id)
+        public async Task<Post?> GetPost(Guid id)
         {
-            throw new NotImplementedException();
+            return await _context.Posts.FindAsync(id);
         }
 
-        public Task<IEnumerable<Post>> GetPosts()
+        public async Task<IEnumerable<Post>> GetPosts()
         {
-            throw new NotImplementedException();
+            return await _context.Posts.ToListAsync();
         }
 
-        public Task<IEnumerable<Post>> GetPostsByUser(string userId)
+        public async Task<IEnumerable<Post>> GetPostsByUser(string userId)
         {
-            throw new NotImplementedException();
+            return await _context.Posts.Where(p => p.UserId == userId).ToListAsync();
         }
 
-        public Task UpdatePost(Post post)
+        public async Task UpdatePost(Post post)
         {
-            throw new NotImplementedException();
+            _context.Entry(post).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
         }
-
-        // Implement the methods here
     }
 }

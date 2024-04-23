@@ -15,13 +15,13 @@ namespace RedditAPI.Models
 
         [Required]
         public string UserId { get; set; } // Post belongs to a User
-        public virtual User? User { get; set; } // Declare 'User' property as nullable
+        public virtual User User { get; set; } // Declare 'User' property as nullable
         public virtual ICollection<Comment>? Comments { get; set; } // Declare 'Comments' property as nullable
         public virtual ICollection<Vote>? Votes { get; set; } // Declare 'Votes' property as nullable
 
         public Post(string title, string userId,  string? content = null)
         {
-            if(content == null)
+            if (content == null)
             {
                 content = title;
             }
@@ -35,7 +35,7 @@ namespace RedditAPI.Models
             Votes = new List<Vote>();
         }
 
-      
+
     }
 
 }

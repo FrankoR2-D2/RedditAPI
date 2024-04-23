@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RedditAPI.DTOs;
 using RedditAPI.Models;
 using RedditAPI.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace RedditAPI.Controllers
 {
@@ -22,42 +25,81 @@ namespace RedditAPI.Controllers
 
 [Authorize]
 [HttpPost]
-public async Task<IActionResult> Create(CreatePostRequest request)
-{
-    if (!ModelState.IsValid)
-    {
-        return BadRequest(ModelState);
-    }
+        public async Task<IActionResult> Create(CreatePostRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-    var user = await _userManager.GetUserAsync(User);
-    if (user == null)
-    {
-        return NotFound("User not found.");
-    }
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
 
-    var post = new Post(request.Title, user.Id, request.Content);
+            var post = new Post(request.Title, user.Id, request.Content)
+            {
+                User = user
+            };
 
-    // Save the post to the database...
-    await _postService.CreatePost(post);
+            // Save the post to the database...
+            await _postService.CreatePost(post);
 
-    return Ok(post);
-}
+            var postDto = new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            };
+
+            // Serialize the postDto using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(postDto);
+
+            return Ok(json);
+        }
 
 
 
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Post>>> GetPosts()
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPosts()
         {
             var posts = await _postService.GetPosts();
-            return Ok(posts);
+
+            var postDtos = posts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            }).ToList();
+
+            return Ok(postDtos);
         }
 
 
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Post>> GetPost(Guid id)
+        public async Task<ActionResult<PostDto>> GetPost(Guid id)
         {
             var post = await _postService.GetPost(id);
 
@@ -66,7 +108,23 @@ public async Task<IActionResult> Create(CreatePostRequest request)
                 return NotFound();
             }
 
-            return Ok(post);
+            var postDto = new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            };
+
+            return Ok(postDto);
         }
 
         [Authorize]
@@ -108,7 +166,7 @@ public async Task<IActionResult> Create(CreatePostRequest request)
 
         [Authorize]
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<IEnumerable<Post>>> GetPostsByUser(string userId)
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsByUser(string userId)
         {
             var posts = await _postService.GetPostsByUser(userId);
 
@@ -117,7 +175,25 @@ public async Task<IActionResult> Create(CreatePostRequest request)
                 return NotFound();
             }
 
-            return Ok(posts);
+            var postDtos = posts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User.Id,
+                    UserName = post.User.UserName,
+                    Email = post.User.Email
+                }
+            }).ToList();
+
+            return Ok(postDtos);
         }
     }
+
+
 }
