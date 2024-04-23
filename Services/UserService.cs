@@ -30,6 +30,11 @@ namespace RedditAPI.Services
             return user;
         }
 
+
+        public async Task<IEnumerable<User>> GetUsers()
+        {
+            return await _context.Users.ToListAsync();
+        }
         public async Task UpdateUser(User user)
         {
             var userInDb = await _context.Users.FindAsync(user.Id);

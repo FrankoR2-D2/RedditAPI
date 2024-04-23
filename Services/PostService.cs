@@ -30,9 +30,9 @@ namespace RedditAPI.Services
             }
         }
 
-        public async Task<Post?> GetPost(Guid id)
+        public async Task<Post> GetPost(Guid id)
         {
-            return await _context.Posts.FindAsync(id);
+            return await _context.Posts.FindAsync(id) ?? throw new ArgumentNullException(nameof(id));
         }
 
         public async Task<IEnumerable<Post>> GetPosts()

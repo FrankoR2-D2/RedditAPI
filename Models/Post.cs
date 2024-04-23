@@ -15,7 +15,7 @@ namespace RedditAPI.Models
 
         [Required]
         public string UserId { get; set; } // Post belongs to a User
-        public virtual User User { get; set; } // Declare 'User' property as nullable
+        public virtual User? User { get; set; } // Declare 'User' property as nullable
         public virtual ICollection<Comment>? Comments { get; set; } // Declare 'Comments' property as nullable
         public virtual ICollection<Vote>? Votes { get; set; } // Declare 'Votes' property as nullable
 

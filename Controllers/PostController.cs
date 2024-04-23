@@ -50,15 +50,15 @@ namespace RedditAPI.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
+                Content = post.Content!,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 UserId = post.UserId,
                 User = new UserDto
                 {
                     Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
                 }
             };
 
@@ -81,15 +81,15 @@ namespace RedditAPI.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
+                Content = post.Content!,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 UserId = post.UserId,
                 User = new UserDto
                 {
-                    Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
+                    Id = post.User!.Id,
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
                 }
             }).ToList();
 
@@ -112,15 +112,15 @@ namespace RedditAPI.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
+                Content = post.Content!,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 UserId = post.UserId,
                 User = new UserDto
                 {
-                    Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
+                    Id = post.User!.Id,
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
                 }
             };
 
@@ -144,9 +144,28 @@ namespace RedditAPI.Controllers
             existingPost.UpdatedAt = DateTime.Now;
 
             await _postService.UpdatePost(existingPost);
+            var postDto = new PostDto
+            {
+                Id = existingPost.Id,
+                Title = existingPost.Title,
+                Content = existingPost.Content!,
+                CreatedAt = existingPost.CreatedAt,
+                UpdatedAt = existingPost.UpdatedAt,
+                UserId = existingPost.UserId,
+                User = new UserDto
+                {
+                    Id = existingPost.User!.Id,
+                    UserName = existingPost.User.UserName!,
+                    Email = existingPost.User.Email!
+                }
+            };
 
-            return NoContent();
+            // Serialize the postDto using the source-generated JSON serializer
+            string json = JsonSerializer.Serialize(postDto);
+
+            return Ok(json);
         }
+
 
         [Authorize]
         [HttpDelete("{id}")]
@@ -179,15 +198,15 @@ namespace RedditAPI.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
+                Content = post.Content!,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 UserId = post.UserId,
                 User = new UserDto
                 {
-                    Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
+                    Id = post.User!.Id,
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
                 }
             }).ToList();
 

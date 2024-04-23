@@ -15,7 +15,7 @@ namespace RedditAPI.Services
 
         public async Task<Comment> GetComment(Guid id)
         {
-            return await _context.Comments.FindAsync(id);
+            return await _context.Comments.FindAsync(id) ?? throw new ArgumentNullException(nameof(id));
         }
 
         public async Task<Comment> CreateComment(Comment comment)
