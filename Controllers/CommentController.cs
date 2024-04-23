@@ -35,9 +35,9 @@ namespace RedditAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CommentDto>> CreateComment(CommentDto commentDto)
+        public async Task<ActionResult<CommentDto>> CreateComment(CreateCommentDto createCommentDto)
         {
-            var comment = _mapper.Map<Comment>(commentDto);
+            var comment = _mapper.Map<Comment>(createCommentDto);
 
             var createdComment = await _commentService.CreateComment(comment);
 

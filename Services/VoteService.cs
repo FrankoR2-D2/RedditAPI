@@ -15,7 +15,14 @@ namespace RedditAPI.Services
 
         public async Task<Vote> GetVote(Guid id)
         {
-            return await _context.Votes.FindAsync(id);
+            var vote = await _context.Votes.FindAsync(id);
+            if (vote == null)
+            {
+                // Handle the case when no vote is found
+                // For example, you can throw an exception or return a default value
+                throw new Exception("Vote not found");
+            }
+            return vote;
         }
 
         public async Task<Vote> CreateVote(Vote vote)
@@ -40,6 +47,15 @@ namespace RedditAPI.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<IEnumerable<Vote>> GetVotesByUser(string userId)
+        {
+            return await _context.Votes
+                .Where(vote => vote.UserId == userId)
+                .ToListAsync();
+        }
+
+
     }
 
 }

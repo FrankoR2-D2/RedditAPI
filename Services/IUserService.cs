@@ -9,5 +9,7 @@ namespace RedditAPI.Services
         Task<User> GetUser(string id);
         Task UpdateUser(User user);
         Task DeleteUser(string id);
+        // adding get users method
+        Task<IEnumerable<User>> GetUsers();
     }
 }

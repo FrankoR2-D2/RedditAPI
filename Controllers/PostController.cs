@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RedditAPI.Data;
 using RedditAPI.DTOs;
 using RedditAPI.Models;
 using RedditAPI.Services;
@@ -16,11 +18,12 @@ namespace RedditAPI.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly IPostService _postService;
-
-        public PostsController(UserManager<User> userManager, IPostService postService)
+        private readonly RedditDbContext _context;
+        public PostsController(UserManager<User> userManager, IPostService postService, RedditDbContext context)
         {
             _userManager = userManager;
             _postService = postService;
+            _context = context;
         }
 
 [Authorize]
@@ -50,15 +53,15 @@ namespace RedditAPI.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
+                Content = post.Content!,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 UserId = post.UserId,
                 User = new UserDto
                 {
                     Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
                 }
             };
 
@@ -81,15 +84,15 @@ namespace RedditAPI.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
+                Content = post.Content!,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 UserId = post.UserId,
                 User = new UserDto
                 {
-                    Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
+                    Id = post.User!.Id,
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
                 }
             }).ToList();
 
@@ -97,39 +100,22 @@ namespace RedditAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<PostDto>> GetPost(Guid id)
         {
-            var post = await _postService.GetPost(id);
+            var postDto = await _postService.GetPost(id);
 
-            if (post == null)
+            if (postDto == null)
             {
                 return NotFound();
             }
-
-            var postDto = new PostDto
-            {
-                Id = post.Id,
-                Title = post.Title,
-                Content = post.Content,
-                CreatedAt = post.CreatedAt,
-                UpdatedAt = post.UpdatedAt,
-                UserId = post.UserId,
-                User = new UserDto
-                {
-                    Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
-                }
-            };
 
             return Ok(postDto);
         }
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePost(Guid id, Post post)
+        public async Task<IActionResult> UpdatePost(Guid id, UpdatePostRequest request)
         {
             var existingPost = await _postService.GetPost(id);
 
@@ -138,15 +124,25 @@ namespace RedditAPI.Controllers
                 return NotFound();
             }
 
-            // Update the properties of the existing post
-            existingPost.Title = post.Title;
-            existingPost.Content = post.Content;
-            existingPost.UpdatedAt = DateTime.Now;
+            // Retrieve the Post model from the database
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null)
+            {
+                return NotFound();
+            }
 
-            await _postService.UpdatePost(existingPost);
+            // Update the properties of the post model
+            post.Title = request.Title;
+            post.Content = request.Content;
+            post.UpdatedAt = DateTime.Now;
 
-            return NoContent();
+            await _postService.UpdatePost(post);
+
+            // Continue with your existing code...
+
+            return Ok(); // Add this line
         }
+
 
         [Authorize]
         [HttpDelete("{id}")]
@@ -179,20 +175,56 @@ namespace RedditAPI.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
+                Content = post.Content!,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
                 UserId = post.UserId,
                 User = new UserDto
                 {
-                    Id = post.User.Id,
-                    UserName = post.User.UserName,
-                    Email = post.User.Email
+                    Id = post.User!.Id,
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
                 }
             }).ToList();
 
             return Ok(postDtos);
         }
+
+        [HttpGet("user/identifier/{usernameOrEmail}")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsByUserNameOrEmail(string usernameOrEmail)
+        {
+            // Try to find the user by username or email
+            var user = await _userManager.FindByNameAsync(usernameOrEmail) ?? await _userManager.FindByEmailAsync(usernameOrEmail);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Get all posts made by the user
+            var posts = await _postService.GetPostsByUser(user.Id);
+
+            // Map the posts to PostDto
+            var postDtos = posts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content!,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User!.Id,
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
+                }
+            }).ToList();
+
+            return Ok(postDtos);
+        }
+
+
+
     }
 
 

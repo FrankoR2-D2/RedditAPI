@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using RedditAPI.DTOs;
 using RedditAPI.Models;
 using RedditAPI.Services;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,40 +20,49 @@ namespace RedditAPI.Controllers
         private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
+        private readonly IVoteService _voteService;
+        private readonly IPostService _postService;
 
-        public UserController(IUserService userService, UserManager<User> userManager, IConfiguration configuration)
+        public UserController(IUserService userService, UserManager<User> userManager, IConfiguration configuration, IMapper mapper, IVoteService voteService, IPostService postService)
         {
             _userManager = userManager;
             _userService = userService;
             _configuration = configuration;
+            _mapper = mapper;
+            _voteService = voteService;
+            _postService = postService;
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<UserDto>> CreateUser(CreateUserDto createUserDto)
         {
+            var user = _mapper.Map<User>(createUserDto);
             var newUser = await _userService.CreateUser(user);
-            return CreatedAtAction(nameof(GetUser), new { id = newUser.Id }, newUser);
+            var newUserDto = _mapper.Map<UserDto>(newUser);
+            return CreatedAtAction(nameof(GetUser), new { id = newUserDto.Id }, newUserDto);
         }
 
         [HttpGet("{id}")]
-
-        public async Task<ActionResult<User>> GetUser(string id)
+        public async Task<ActionResult<UserDto>> GetUser(string id)
         {
             var user = await _userService.GetUser(id);
             if (user == null)
             {
                 return NotFound();
             }
-            return user;
+            var userDto = _mapper.Map<UserDto>(user);
+            return userDto;
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id, User user)
+        public async Task<IActionResult> UpdateUser(string id, UpdateUserDto updateUserDto)
         {
-            if (id != user.Id)
+            if (id != updateUserDto.Id)
             {
                 return BadRequest();
             }
+            var user = _mapper.Map<User>(updateUserDto);
             await _userService.UpdateUser(user);
             return NoContent();
         }
@@ -60,6 +72,14 @@ namespace RedditAPI.Controllers
         {
             await _userService.DeleteUser(id);
             return NoContent();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+        {
+            var users = await _userService.GetUsers();
+            var userDtos = _mapper.Map<IEnumerable<UserDto>>(users);
+            return Ok(userDtos);
         }
 
 
@@ -119,6 +139,62 @@ namespace RedditAPI.Controllers
             return tokenHandler.WriteToken(token);
         }
 
+
+        [Authorize]
+        [HttpGet("{userId}/votes")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetUserVotes(string userId)
+        {
+            // Get all votes made by the user
+            var votes = await _voteService.GetVotesByUser(userId);
+
+            if (votes == null)
+            {
+                return NotFound();
+            }
+
+            // Get the posts associated with each vote
+            var postDtos = new List<PostDto>();
+            foreach (var vote in votes)
+            {
+                if (vote.PostId == null)
+                {
+                    continue;
+                }
+
+                var post = await _postService.GetPost(vote.PostId.Value);
+                if (post != null)
+                {
+                    postDtos.Add(new PostDto
+                    {
+                        Id = post.Id,
+                        Title = post.Title,
+                        Content = post.Content!,
+                        CreatedAt = post.CreatedAt,
+                        UpdatedAt = post.UpdatedAt,
+                        UserId = post.UserId,
+                        User = new UserDto
+                        {
+                            Id = post.User!.Id,
+                            UserName = post.User.UserName!,
+                            Email = post.User.Email!
+                        }
+                    });
+                }
+            }
+
+            return Ok(postDtos);
+        }
+
+        [HttpGet("getUserId")]
+        public async Task<ActionResult<string>> GetUserId(string emailOrUsername)
+        {
+            var user = await _userManager.FindByEmailAsync(emailOrUsername) ?? await _userManager.FindByNameAsync(emailOrUsername);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user.Id);
+        }
 
     }
 }
