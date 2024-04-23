@@ -47,6 +47,15 @@ namespace RedditAPI.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<IEnumerable<Vote>> GetVotesByUser(string userId)
+        {
+            return await _context.Votes
+                .Where(vote => vote.UserId == userId)
+                .ToListAsync();
+        }
+
+
     }
 
 }

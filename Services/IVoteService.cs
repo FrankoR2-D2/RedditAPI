@@ -8,5 +8,7 @@ namespace RedditAPI.Services
         Task<Vote> CreateVote(Vote vote);
         Task UpdateVote(Vote vote);
         Task DeleteVote(Guid id);
+        Task<IEnumerable<Vote>> GetVotesByUser(string userId);  // This line is added
+
     }
 }

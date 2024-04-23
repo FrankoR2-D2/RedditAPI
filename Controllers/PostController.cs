@@ -129,7 +129,7 @@ namespace RedditAPI.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePost(Guid id, Post post)
+        public async Task<IActionResult> UpdatePost(Guid id, UpdatePostRequest request)
         {
             var existingPost = await _postService.GetPost(id);
 
@@ -139,8 +139,8 @@ namespace RedditAPI.Controllers
             }
 
             // Update the properties of the existing post
-            existingPost.Title = post.Title;
-            existingPost.Content = post.Content;
+            existingPost.Title = request.Title;
+            existingPost.Content = request.Content;
             existingPost.UpdatedAt = DateTime.Now;
 
             await _postService.UpdatePost(existingPost);
@@ -212,6 +212,41 @@ namespace RedditAPI.Controllers
 
             return Ok(postDtos);
         }
+
+        [HttpGet("user/username/{username}")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsByUserName(string username)
+        {
+            // Get the user with the provided username
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Get all posts made by the user
+            var posts = await _postService.GetPostsByUser(user.Id);
+
+            // Map the posts to PostDto
+            var postDtos = posts.Select(post => new PostDto
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content!,
+                CreatedAt = post.CreatedAt,
+                UpdatedAt = post.UpdatedAt,
+                UserId = post.UserId,
+                User = new UserDto
+                {
+                    Id = post.User!.Id,
+                    UserName = post.User.UserName!,
+                    Email = post.User.Email!
+                }
+            }).ToList();
+
+            return Ok(postDtos);
+        }
+
+
     }
 
 

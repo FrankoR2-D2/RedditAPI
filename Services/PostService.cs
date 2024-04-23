@@ -50,5 +50,11 @@ namespace RedditAPI.Services
             _context.Entry(post).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Post>> GetPostsByUserId(string userId)
+        {
+            return await _context.Posts.Where(p => p.UserId == userId).ToListAsync();
+        }
+
     }
 }

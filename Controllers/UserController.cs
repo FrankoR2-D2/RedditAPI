@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,15 +20,18 @@ namespace RedditAPI.Controllers
         private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
-        private readonly IMapper _mapper;  // Declare the _mapper field
+        private readonly IMapper _mapper;
+        private readonly IVoteService _voteService;
+        private readonly IPostService _postService;
 
-
-        public UserController(IUserService userService, UserManager<User> userManager, IConfiguration configuration, IMapper mapper)
+        public UserController(IUserService userService, UserManager<User> userManager, IConfiguration configuration, IMapper mapper, IVoteService voteService, IPostService postService)
         {
             _userManager = userManager;
             _userService = userService;
             _configuration = configuration;
             _mapper = mapper;
+            _voteService = voteService;
+            _postService = postService;
         }
 
         [HttpPost]
@@ -134,6 +138,53 @@ namespace RedditAPI.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
+
+        [Authorize]
+        [HttpGet("{userId}/votes")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetUserVotes(string userId)
+        {
+            // Get all votes made by the user
+            var votes = await _voteService.GetVotesByUser(userId);
+
+            if (votes == null)
+            {
+                return NotFound();
+            }
+
+            // Get the posts associated with each vote
+            var postDtos = new List<PostDto>();
+            foreach (var vote in votes)
+            {
+                if (vote.PostId == null)
+                {
+                    continue;
+                }
+
+                var post = await _postService.GetPost(vote.PostId.Value);
+                if (post != null)
+                {
+                    postDtos.Add(new PostDto
+                    {
+                        Id = post.Id,
+                        Title = post.Title,
+                        Content = post.Content!,
+                        CreatedAt = post.CreatedAt,
+                        UpdatedAt = post.UpdatedAt,
+                        UserId = post.UserId,
+                        User = new UserDto
+                        {
+                            Id = post.User!.Id,
+                            UserName = post.User.UserName!,
+                            Email = post.User.Email!
+                        }
+                    });
+                }
+            }
+
+            return Ok(postDtos);
+        }
+
 
 
     }
