@@ -11,5 +11,7 @@ namespace RedditAPI.Services
         Task DeleteUser(string id);
         // adding get users method
         Task<IEnumerable<User>> GetUsers();
+        Task<IEnumerable<Vote>> GetVotesByUser(string userId);
+
     }
 }

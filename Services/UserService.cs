@@ -66,5 +66,12 @@ namespace RedditAPI.Services
                 throw new ArgumentException($"User with id {id} not found.");
             }
         }
+
+        public async Task<IEnumerable<Vote>> GetVotesByUser(string userId)
+        {
+            return await _context.Votes
+                .Where(vote => vote.UserId == userId)
+                .ToListAsync();
+        }
     }
 }
