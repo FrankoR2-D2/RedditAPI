@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RedditAPI.Data;
+using RedditAPI.Mappings;
 using RedditAPI.Models;
 using RedditAPI.Services;
 using System.Text;
