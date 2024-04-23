@@ -185,7 +185,16 @@ namespace RedditAPI.Controllers
             return Ok(postDtos);
         }
 
-
+        [HttpGet("getUserId")]
+        public async Task<ActionResult<string>> GetUserId(string emailOrUsername)
+        {
+            var user = await _userManager.FindByEmailAsync(emailOrUsername) ?? await _userManager.FindByNameAsync(emailOrUsername);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user.Id);
+        }
 
     }
 }

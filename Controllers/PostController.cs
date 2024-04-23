@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RedditAPI.Data;
 using RedditAPI.DTOs;
 using RedditAPI.Models;
 using RedditAPI.Services;
@@ -16,11 +18,12 @@ namespace RedditAPI.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly IPostService _postService;
-
-        public PostsController(UserManager<User> userManager, IPostService postService)
+        private readonly RedditDbContext _context;
+        public PostsController(UserManager<User> userManager, IPostService postService, RedditDbContext context)
         {
             _userManager = userManager;
             _postService = postService;
+            _context = context;
         }
 
 [Authorize]
@@ -97,32 +100,15 @@ namespace RedditAPI.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<PostDto>> GetPost(Guid id)
         {
-            var post = await _postService.GetPost(id);
+            var postDto = await _postService.GetPost(id);
 
-            if (post == null)
+            if (postDto == null)
             {
                 return NotFound();
             }
-
-            var postDto = new PostDto
-            {
-                Id = post.Id,
-                Title = post.Title,
-                Content = post.Content!,
-                CreatedAt = post.CreatedAt,
-                UpdatedAt = post.UpdatedAt,
-                UserId = post.UserId,
-                User = new UserDto
-                {
-                    Id = post.User!.Id,
-                    UserName = post.User.UserName!,
-                    Email = post.User.Email!
-                }
-            };
 
             return Ok(postDto);
         }
@@ -138,32 +124,23 @@ namespace RedditAPI.Controllers
                 return NotFound();
             }
 
-            // Update the properties of the existing post
-            existingPost.Title = request.Title;
-            existingPost.Content = request.Content;
-            existingPost.UpdatedAt = DateTime.Now;
-
-            await _postService.UpdatePost(existingPost);
-            var postDto = new PostDto
+            // Retrieve the Post model from the database
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null)
             {
-                Id = existingPost.Id,
-                Title = existingPost.Title,
-                Content = existingPost.Content!,
-                CreatedAt = existingPost.CreatedAt,
-                UpdatedAt = existingPost.UpdatedAt,
-                UserId = existingPost.UserId,
-                User = new UserDto
-                {
-                    Id = existingPost.User!.Id,
-                    UserName = existingPost.User.UserName!,
-                    Email = existingPost.User.Email!
-                }
-            };
+                return NotFound();
+            }
 
-            // Serialize the postDto using the source-generated JSON serializer
-            string json = JsonSerializer.Serialize(postDto);
+            // Update the properties of the post model
+            post.Title = request.Title;
+            post.Content = request.Content;
+            post.UpdatedAt = DateTime.Now;
 
-            return Ok(json);
+            await _postService.UpdatePost(post);
+
+            // Continue with your existing code...
+
+            return Ok(); // Add this line
         }
 
 
@@ -213,11 +190,11 @@ namespace RedditAPI.Controllers
             return Ok(postDtos);
         }
 
-        [HttpGet("user/username/{username}")]
-        public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsByUserName(string username)
+        [HttpGet("user/identifier/{usernameOrEmail}")]
+        public async Task<ActionResult<IEnumerable<PostDto>>> GetPostsByUserNameOrEmail(string usernameOrEmail)
         {
-            // Get the user with the provided username
-            var user = await _userManager.FindByNameAsync(username);
+            // Try to find the user by username or email
+            var user = await _userManager.FindByNameAsync(usernameOrEmail) ?? await _userManager.FindByEmailAsync(usernameOrEmail);
             if (user == null)
             {
                 return NotFound();
@@ -245,6 +222,7 @@ namespace RedditAPI.Controllers
 
             return Ok(postDtos);
         }
+
 
 
     }
