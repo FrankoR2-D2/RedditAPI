@@ -29,6 +29,7 @@
 •	Navigate to the directory where you want to clone the repository.
 •	Run the following command: git clone <your-repository-url>. Replace <your-repository-url> with the URL of your GitHub repository.
 
+
 3.	Configure the Connection String:
 •	In the cloned repository, find the appsettings.json file.
 •	Replace the connection string in this file with the connection string for your SQL Server instance. The connection string should be in the following format: Server=<server-name>;Database=<database-name>;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=True;.
@@ -40,20 +41,51 @@
 5.	Restore the Dependencies:
 •	Run the following command: dotnet restore <your-project-file>. Replace <your-project-file> with the name of your project file.
 
+
+## Database Migrations
+
+Entity Framework Core migrations allow you to manage changes to your database schema. You can add a migration and update your database using the following commands:
+
+1. Add a new migration:
+
+        PM> add-migration "MigrationName"
+        Build started...
+        Build succeeded.
+        To undo this action, use Remove-Migration.
+
+Replace `<MigrationName>` with the name of your migration.
+
+2. Update the database:
+
+               update-database
+        Build started...
+        Build succeeded.
+        ...EF sql code ...
+        Done.  
+
+These commands should be run in the terminal from the directory containing your .NET project file (.csproj).
+
+
 6.	Build the Project:
 •	Run the following command: dotnet build <your-project-file>. Replace <your-project-file> with the name of your project file.
 
+        ie. dotnet build .\MockRedditAPI.csproj
 
+
+ 1. 
 7.	Run the Project:
 •	Run the following command: dotnet run --project <your-project-file>. Replace <your-project-file> with the name of your project file.
 •	You should see output indicating the application has started and is listening on a certain port (usually http://localhost:5000 or https://localhost:5001).
 •	On the first run, Entity Framework will automatically create the database and tables based on your code.
 
-
+     ie. dotnet run --project  .\MockRedditAPI.csproj
+ 
 8.	Access the API:
 •	You can now access the API endpoints by making requests to http://localhost:5000/<your-endpoint> or https://localhost:5001/<your-endpoint>.
 Remember to replace <your-repository-url>, <server-name>, <database-name>, <your-project-file>, and <your-endpoint> with the actual values.
 
+ 
+ 
  Dependencies
 This project uses the following NuGet packages:
 dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection --version 12.0.1
@@ -65,6 +97,38 @@ dotnet add package Microsoft.EntityFrameworkCore --version 8.0.4
 dotnet add package Microsoft.EntityFrameworkCore.Proxies --version 8.0.4
 dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 8.0.4
 dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.4
+
+    
+    ## App Settings Configuration
+
+The `appsettings.json` file is used to store application settings such as connection strings,
+JWT settings, and logging settings. Here's a template you can use:
+
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=<YourServerName>;Database=<YourDatabaseName>;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "Jwt": {
+    "Key": "<YourJwtKey>",
+    "Issuer": "<YourJwtIssuer>",
+    "Audience": "<YourJwtAudience>"
+  }
+}
+
+Replace <YourServerName>, <YourDatabaseName>, <YourJwtKey>, <YourJwtIssuer>, and <YourJwtAudience> with your actual values.
+•	Logging: This section is used to set the logging level. The default level is "Information", which means logs at this level and higher will be logged. "Microsoft" is set to "Warning", which means only logs at this level and higher will be logged for Microsoft's own classes.
+•	AllowedHosts: This is used to set the hosts that are allowed to access the application. "*" means any host is allowed.
+•	ConnectionStrings: This section is used to store connection strings. The "DefaultConnection" string is used by Entity Framework to connect to the database.
+•	Jwt: This section is used to configure the settings for JWT (JSON Web Token) authentication. The "Key" is used to sign the token, the "Issuer" is the one who issues the token, and the "Audience" is the intended recipient of the token.
+
 
 ----------------------------------------------------------------------------------------------------------------------------
 Documentation on MockRedditAPI
