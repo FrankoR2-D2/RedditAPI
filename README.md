@@ -136,12 +136,6 @@ Documentation on MockRedditAPI
 
 -------------------------------------------- Relationships  -------------------------------------------------------------------------
      
-        Yes, your updated models look correct based on the requirements of your makeshift Reddit API project.
-        You have properly defined the one-to-many relationships between User and Post, User and Comment,
-        and Post and Comment using navigation properties.
-        You’ve also correctly defined the many-to-one relationships from Post, Comment, and Vote to User.
-
-        Here’s a brief overview of your models:
 
         User: A user can create many posts, comments, and votes.
                 This is represented by the ICollection<Post> Posts,
@@ -198,14 +192,6 @@ Documentation on MockRedditAPI
                 + Post: Post
                 + CommentId: Guid
                 + Comment: Comment
-
-            In this diagram:
-
-Each box represents a class (entity). The name of the class is at the top, followed by its properties.
-The + symbol before each property indicates that it’s public.
-The type of each property is listed after the property name.
-The ICollection<T> type indicates a collection navigation property, which is used to represent relationships between entities123.
-The ? symbol after a type indicates that the property is nullable123.
 
 
 ----------------------------------------------------------------------------------------------------------------------------
